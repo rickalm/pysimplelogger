@@ -1,23 +1,43 @@
 # vim:ft=make: 
 
-dist_clean: clean
-	rm -rf dist/
+_PYTHON_VERSION=3.6.5
 
-clean:
-	rm -rf *.egg-info/ build/ .pytest_cache/
-	find . -type d -name __pycache__ | xargs rm -rf
+all: test
 
-dist: dist_clean
-	pipenv --rm
-	pipenv run pipenv install -d
-	pipenv run py.test
-	pipenv run python3 setup.py sdist bdist_wheel
-	make clean
+isPYENV:
+	@echo --- entering $@
+	@test -n "${PYENV_SHELL}"
 
-test: dist_clean
-	pipenv --rm
-	pipenv run pipenv install -d
-	pipenv run py.test
+isValid:
+	@echo --- entering $@
+	poetry check
 
-upload: dist
-	pipenv run twine upload dist/*
+env: isPYENV isValid
+	@echo --- entering $@
+	@pyenv install ${_PYTHON_VERSION} -s
+	@pyenv local ${_PYTHON_VERSION}
+	@poetry install
+
+clean: vdir=$(shell poetry debug:info | grep Path | cut -d: -f2- | sed -e 's/^ *//')
+clean: clean_build
+	@echo --- entering $@
+	@-[ -n "${vdir}" ] && rm -rf ${vdir}
+	@-rm -rf dist/ .python_version
+
+clean_build:
+	@echo --- entering $@
+	@-find . -type d -name __pycache__ | xargs rm -rf
+	@-rm -rf *.egg-info/ build/ .pytest_cache/
+
+test: isValid clean env
+	@echo --- entering $@
+	poetry run py.test
+
+build: isValid test
+	@echo --- entering $@
+	poetry build
+	make clean_build
+
+upload: isValid build
+	@echo --- entering $@
+	poetry publish
