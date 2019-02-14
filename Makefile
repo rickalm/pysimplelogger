@@ -31,7 +31,7 @@ clean_build:
 
 test: isValid clean env
 	@echo --- entering $@
-	poetry run py.test
+	poetry run python -m pytest
 
 build: isValid test
 	@echo --- entering $@
