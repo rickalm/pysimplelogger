@@ -1,3 +1,6 @@
+# We are not using pip to make packages, migrated to poetry
+setup.py
+
 # from https://github.com/github/gitignore/blob/master/Python.gitignore
 #
 # Byte-compiled / optimized / DLL files
