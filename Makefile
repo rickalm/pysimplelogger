@@ -3,16 +3,18 @@
 _PYTHON_VERSION=3.6.5
 
 all: test
+valid: isValid
 
 isPYENV:
 	@echo --- entering $@
+	@test -n "${PYENV_SHELL}" || echo 'pyenv is not part of your environment.. Please execute the following first\n\neval "$$(pyenv init -)"\n\n\n'
 	@test -n "${PYENV_SHELL}"
 
-isValid:
+isValid: env
 	@echo --- entering $@
 	poetry check
 
-env: isPYENV isValid
+env: isPYENV 
 	@echo --- entering $@
 	@pyenv install ${_PYTHON_VERSION} -s
 	@pyenv local ${_PYTHON_VERSION}
@@ -29,7 +31,7 @@ clean_build:
 	@-find . -type d -name __pycache__ | xargs rm -rf
 	@-rm -rf *.egg-info/ build/ .pytest_cache/
 
-test: isValid clean env
+test: isValid clean 
 	@echo --- entering $@
 	poetry run python -m pytest
 
